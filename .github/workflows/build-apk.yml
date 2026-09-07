@@ -27,6 +27,10 @@ jobs:
       - name: Generate Android project
         run: flutter create --platforms=android --org com.kanyeweststudio .
 
+      - name: Patch AndroidManifest
+        run: |
+          sed -i 's#<application#<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />\n    <queries>\n        <package android:name="com.roblox.client" />\n    </queries>\n    <application#' android/app/src/main/AndroidManifest.xml
+
       - name: Install dependencies
         run: flutter pub get
 
