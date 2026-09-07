@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:safestrap/services/script_generator.dart';
 
 class FFlagsTab extends StatefulWidget {
   const FFlagsTab({super.key});
