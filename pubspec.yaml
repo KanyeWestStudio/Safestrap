@@ -1,6 +1,3 @@
----
-
-```yaml
 name: safestrap
 description: Safe multi-platform Roblox bootstrapper built with Flutter.
 publish_to: 'none'
