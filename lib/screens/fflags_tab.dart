@@ -1,4 +1,7 @@
+// lib/screens/fflags_tab.dart
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:safestrap/services/script_generator.dart';
 
 class FFlagsTab extends StatefulWidget {
@@ -9,65 +12,96 @@ class FFlagsTab extends StatefulWidget {
 }
 
 class _FFlagsTabState extends State<FFlagsTab> {
-  // ─── All flags with defaults ──────────────────────────────────
-  Map<String, dynamic> _flags = {
-    // Performance
-    'DFIntTaskSchedulerTargetFps': 60,
-    'FFlagTaskSchedulerLimitTargetFpsTo2402': false,
-    'FFlagAuroraLimit60HzRenderSim': false,
-    'FIntFrameRateMSToReduceTouchEvents': 16,
+  Map<String, dynamic> _flags = {};
 
-    // Rendering
-    'FFlagDebugGraphicsPreferVulkan': false,
-    'FFlagDebugGraphicsPreferOpenGL': false,
-    'FFlagDebugGraphicsPreferD3D11': true,
-    'FFlagDebugGraphicsPreferD3D11FL10': false,
-    'FFlagDebugGraphicsPreferMetal': false,
-    'DFIntDebugFRMQualityLevelOverride': 2,
-    'FIntDebugForceMSAASamples': 0,
-    'FFlagEnableAndroidVsync': false,
-    'FFlagAndroidGLView': false,
-    'DFIntRenderPostFxBasePixelCount': 0,
+  // ─── Lifecycle ──────────────────────────────────────────────
+  @override
+  void initState() {
+    super.initState();
+    _loadFlags();
+  }
 
-    // Dynamic Resolution Scaling (new)
-    'DFFlagDebugEnableInterpThrottle': false, // note the typo "lnterp" – we keep it
-    'FFlagAutomaticDRS': false,
-    'FFlagDRSBasicManagement': false,
-    'FFlagAutomaticDRSEnableLowDPI': false,
-    'FIntAutomaticDRSHundredthPercent': 50,
-    'FIntAutomaticDRSQLThreshold': 5,
-    'FFlagAutomaticDRSUseGpuTime': false,
-    'FFlagAutomaticDRSSkipInvalidGpuTimeSamples': false,
+  // ─── Load/Save persistence ──────────────────────────────────
+  Future<void> _loadFlags() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString('fflags_map');
+    if (jsonString != null) {
+      try {
+        final decoded = jsonDecode(jsonString) as Map<String, dynamic>;
+        setState(() => _flags = decoded);
+        return;
+      } catch (_) {}
+    }
+    // Fallback to defaults
+    setState(() => _flags = _defaultFlags());
+  }
 
-    // Environment
-    'DFIntCSGLevelOfDetailSwitchingDistance': 200,
-    'DFIntCSGLevelOfDetailSwitchingDistanceL12': 100,
-    'DFIntCSGLevelOfDetailSwitchingDistanceL23': 150,
-    'DFIntCSGLevelOfDetailSwitchingDistanceL34': 250,
-    'FIntGrassMovementReducedMotionFactor': 50,
-    'FIntFRMMaxGrassDistance': 100,
-    'FIntFRMMinGrassDistance': 0,
+  Future<void> _saveFlagsToPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('fflags_map', jsonEncode(_flags));
+  }
 
-    // UI & QoL
-    'FFlagHandleAltEnterFullscreenManually': true,
-    'DFFlagDisableDPIScale': false,
-    'FFlagDebugDisplayFPS': false,
-    'FStringGetPlayerImageDefaultTimeout': '5',
-    'FIntFullscreenTitleBarTriggerDelayMillis': 1000,
-    'FFlagScrollerDeferTouchScrollToFrameEnd': false,
+  // ─── Default values ────────────────────────────────────────
+  Map<String, dynamic> _defaultFlags() {
+    return {
+      // Performance
+      'DFIntTaskSchedulerTargetFps': 60,
+      'FFlagTaskSchedulerLimitTargetFpsTo2402': false,
+      'FFlagAuroraLimit60HzRenderSim': false,
+      'FIntFrameRateMSToReduceTouchEvents': 16,
 
-    // Debug & Stability
-    'DFFlagDebugDisableTimeoutDisconnect': false,
-    'FFlagDebugDisableTelemetryPoint': false,
-    'FFlagDebugSkyGray': false,
-    'DFFlagDebugPauseVoxelizer': false,
+      // Rendering
+      'FFlagDebugGraphicsPreferVulkan': false,
+      'FFlagDebugGraphicsPreferOpenGL': false,
+      'FFlagDebugGraphicsPreferD3D11': true,
+      'FFlagDebugGraphicsPreferD3D11FL10': false,
+      'FFlagDebugGraphicsPreferMetal': false,
+      'DFIntDebugFRMQualityLevelOverride': 2,
+      'FIntDebugForceMSAASamples': 0,
+      'FFlagEnableAndroidVsync': false,
+      'FFlagAndroidGLView': false,
+      'DFIntRenderPostFxBasePixelCount': 0,
 
-    // Networking (new)
-    'FFlagBatchNetAssetJoinBlobEnable': false,
-    'FFlagBatchNetAssetJoinBlob': false,
-  };
+      // Dynamic Resolution Scaling
+      'DFFlagDebugEnableInterpThrottle': false,
+      'FFlagAutomaticDRS': false,
+      'FFlagDRSBasicManagement': false,
+      'FFlagAutomaticDRSEnableLowDPI': false,
+      'FIntAutomaticDRSHundredthPercent': 50,
+      'FIntAutomaticDRSQLThreshold': 5,
+      'FFlagAutomaticDRSUseGpuTime': false,
+      'FFlagAutomaticDRSSkipInvalidGpuTimeSamples': false,
 
-  // ─── Category definitions ────────────────────────────────────
+      // Environment
+      'DFIntCSGLevelOfDetailSwitchingDistance': 200,
+      'DFIntCSGLevelOfDetailSwitchingDistanceL12': 100,
+      'DFIntCSGLevelOfDetailSwitchingDistanceL23': 150,
+      'DFIntCSGLevelOfDetailSwitchingDistanceL34': 250,
+      'FIntGrassMovementReducedMotionFactor': 50,
+      'FIntFRMMaxGrassDistance': 100,
+      'FIntFRMMinGrassDistance': 0,
+
+      // UI & QoL
+      'FFlagHandleAltEnterFullscreenManually': true,
+      'DFFlagDisableDPIScale': false,
+      'FFlagDebugDisplayFPS': false,
+      'FStringGetPlayerImageDefaultTimeout': '5',
+      'FIntFullscreenTitleBarTriggerDelayMillis': 1000,
+      'FFlagScrollerDeferTouchScrollToFrameEnd': false,
+
+      // Networking
+      'FFlagBatchNetAssetJoinBlobEnable': false,
+      'FFlagBatchNetAssetJoinBlob': false,
+
+      // Debug & Stability
+      'DFFlagDebugDisableTimeoutDisconnect': false,
+      'FFlagDebugDisableTelemetryPoint': false,
+      'FFlagDebugSkyGray': false,
+      'DFFlagDebugPauseVoxelizer': false,
+    };
+  }
+
+  // ─── Category definitions ──────────────────────────────────
   final List<Map<String, dynamic>> _categories = [
     {
       'title': 'Performance & Framerate',
@@ -154,6 +188,7 @@ class _FFlagsTabState extends State<FFlagsTab> {
     },
   ];
 
+  // ─── Build UI ───────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -236,7 +271,10 @@ class _FFlagsTabState extends State<FFlagsTab> {
       title: Text(_displayName(key), style: const TextStyle(color: Colors.white, fontSize: 14)),
       subtitle: Text(key, style: const TextStyle(color: Colors.white54, fontSize: 10)),
       value: val,
-      onChanged: (newVal) => setState(() => _flags[key] = newVal),
+      onChanged: (newVal) {
+        setState(() => _flags[key] = newVal);
+        _saveFlagsToPrefs(); // auto‑save on toggle
+      },
       dense: true,
       activeColor: Colors.blue,
     );
@@ -268,7 +306,10 @@ class _FFlagsTabState extends State<FFlagsTab> {
           min: min.toDouble(),
           max: max.toDouble(),
           divisions: (max - min) ~/ 10 > 0 ? (max - min) ~/ 10 : null,
-          onChanged: (newVal) => setState(() => _flags[key] = newVal.round()),
+          onChanged: (newVal) {
+            setState(() => _flags[key] = newVal.round());
+            _saveFlagsToPrefs(); // auto‑save on slider change
+          },
           activeColor: Colors.blue,
         ),
         Padding(
@@ -302,7 +343,10 @@ class _FFlagsTabState extends State<FFlagsTab> {
             child: Text(v.toString(), style: const TextStyle(color: Colors.white)),
           );
         }).toList(),
-        onChanged: (newVal) => setState(() => _flags[key] = newVal!),
+        onChanged: (newVal) {
+          setState(() => _flags[key] = newVal!);
+          _saveFlagsToPrefs(); // auto‑save on dropdown change
+        },
       ),
     );
   }
@@ -322,11 +366,15 @@ class _FFlagsTabState extends State<FFlagsTab> {
           enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
           focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
         ),
-        onChanged: (newVal) => _flags[key] = newVal,
+        onChanged: (newVal) {
+          _flags[key] = newVal;
+          _saveFlagsToPrefs(); // auto‑save on text change
+        },
       ),
     );
   }
 
+  // ─── Human‑readable names ──────────────────────────────────
   String _displayName(String key) {
     const map = {
       // Performance
@@ -381,11 +429,26 @@ class _FFlagsTabState extends State<FFlagsTab> {
     return map[key] ?? key;
   }
 
-  void _saveAndApply() {
+  // ─── Save & apply via ScriptGenerator ──────────────────────
+  void _saveAndApply() async {
+    // Show a snackbar to indicate progress
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('FFlags saved! (Connect to your script generator)')),
+      const SnackBar(content: Text('Applying FFlags...')),
     );
-    print('Saved flags: $_flags');
-    // TODO: Call your Lua script generator here
+    try {
+      // First persist to local prefs (already done via auto-save, but we do it again for safety)
+      await _saveFlagsToPrefs();
+      // Let ScriptGenerator handle the generation and application
+      await ScriptGenerator.generateAndApply(_flags);
+      // Success
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('FFlags applied successfully!')),
+      );
+    } catch (e) {
+      // Error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error applying FFlags: $e')),
+      );
+    }
   }
 }
