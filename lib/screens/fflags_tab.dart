@@ -14,14 +14,12 @@ class FFlagsTab extends StatefulWidget {
 class _FFlagsTabState extends State<FFlagsTab> {
   Map<String, dynamic> _flags = {};
 
-  // ─── Lifecycle ──────────────────────────────────────────────
   @override
   void initState() {
     super.initState();
     _loadFlags();
   }
 
-  // ─── Load/Save persistence ──────────────────────────────────
   Future<void> _loadFlags() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonString = prefs.getString('fflags_map');
@@ -32,7 +30,6 @@ class _FFlagsTabState extends State<FFlagsTab> {
         return;
       } catch (_) {}
     }
-    // Fallback to defaults
     setState(() => _flags = _defaultFlags());
   }
 
@@ -41,7 +38,6 @@ class _FFlagsTabState extends State<FFlagsTab> {
     await prefs.setString('fflags_map', jsonEncode(_flags));
   }
 
-  // ─── Default values ────────────────────────────────────────
   Map<String, dynamic> _defaultFlags() {
     return {
       // Performance
@@ -49,7 +45,6 @@ class _FFlagsTabState extends State<FFlagsTab> {
       'FFlagTaskSchedulerLimitTargetFpsTo2402': false,
       'FFlagAuroraLimit60HzRenderSim': false,
       'FIntFrameRateMSToReduceTouchEvents': 16,
-
       // Rendering
       'FFlagDebugGraphicsPreferVulkan': false,
       'FFlagDebugGraphicsPreferOpenGL': false,
@@ -61,8 +56,7 @@ class _FFlagsTabState extends State<FFlagsTab> {
       'FFlagEnableAndroidVsync': false,
       'FFlagAndroidGLView': false,
       'DFIntRenderPostFxBasePixelCount': 0,
-
-      // Dynamic Resolution Scaling
+      // DRS
       'DFFlagDebugEnableInterpThrottle': false,
       'FFlagAutomaticDRS': false,
       'FFlagDRSBasicManagement': false,
@@ -71,7 +65,6 @@ class _FFlagsTabState extends State<FFlagsTab> {
       'FIntAutomaticDRSQLThreshold': 5,
       'FFlagAutomaticDRSUseGpuTime': false,
       'FFlagAutomaticDRSSkipInvalidGpuTimeSamples': false,
-
       // Environment
       'DFIntCSGLevelOfDetailSwitchingDistance': 200,
       'DFIntCSGLevelOfDetailSwitchingDistanceL12': 100,
@@ -80,20 +73,17 @@ class _FFlagsTabState extends State<FFlagsTab> {
       'FIntGrassMovementReducedMotionFactor': 50,
       'FIntFRMMaxGrassDistance': 100,
       'FIntFRMMinGrassDistance': 0,
-
-      // UI & QoL
+      // UI
       'FFlagHandleAltEnterFullscreenManually': true,
       'DFFlagDisableDPIScale': false,
       'FFlagDebugDisplayFPS': false,
       'FStringGetPlayerImageDefaultTimeout': '5',
       'FIntFullscreenTitleBarTriggerDelayMillis': 1000,
       'FFlagScrollerDeferTouchScrollToFrameEnd': false,
-
       // Networking
       'FFlagBatchNetAssetJoinBlobEnable': false,
       'FFlagBatchNetAssetJoinBlob': false,
-
-      // Debug & Stability
+      // Debug
       'DFFlagDebugDisableTimeoutDisconnect': false,
       'FFlagDebugDisableTelemetryPoint': false,
       'FFlagDebugSkyGray': false,
@@ -101,7 +91,6 @@ class _FFlagsTabState extends State<FFlagsTab> {
     };
   }
 
-  // ─── Category definitions ──────────────────────────────────
   final List<Map<String, dynamic>> _categories = [
     {
       'title': 'Performance & Framerate',
@@ -188,7 +177,6 @@ class _FFlagsTabState extends State<FFlagsTab> {
     },
   ];
 
-  // ─── Build UI ───────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -257,7 +245,6 @@ class _FFlagsTabState extends State<FFlagsTab> {
     } else if (value is int) {
       return _buildSliderTile(key, value, 0, 1000);
     } else {
-      // fallback
       return ListTile(
         title: Text(key, style: const TextStyle(color: Colors.white70, fontSize: 13)),
         subtitle: Text('${value ?? '?'}', style: const TextStyle(color: Colors.white54, fontSize: 11)),
@@ -273,10 +260,10 @@ class _FFlagsTabState extends State<FFlagsTab> {
       value: val,
       onChanged: (newVal) {
         setState(() => _flags[key] = newVal);
-        _saveFlagsToPrefs(); // auto‑save on toggle
+        _saveFlagsToPrefs();
       },
       dense: true,
-      activeColor: Colors.blue,
+      activeThumbColor: Colors.blue, // Fixed deprecated
     );
   }
 
@@ -308,7 +295,7 @@ class _FFlagsTabState extends State<FFlagsTab> {
           divisions: (max - min) ~/ 10 > 0 ? (max - min) ~/ 10 : null,
           onChanged: (newVal) {
             setState(() => _flags[key] = newVal.round());
-            _saveFlagsToPrefs(); // auto‑save on slider change
+            _saveFlagsToPrefs();
           },
           activeColor: Colors.blue,
         ),
@@ -328,7 +315,7 @@ class _FFlagsTabState extends State<FFlagsTab> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: DropdownButtonFormField<int>(
-        value: val,
+        initialValue: val, // Fixed deprecated
         dropdownColor: Colors.grey[900],
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
@@ -345,7 +332,7 @@ class _FFlagsTabState extends State<FFlagsTab> {
         }).toList(),
         onChanged: (newVal) {
           setState(() => _flags[key] = newVal!);
-          _saveFlagsToPrefs(); // auto‑save on dropdown change
+          _saveFlagsToPrefs();
         },
       ),
     );
@@ -368,13 +355,12 @@ class _FFlagsTabState extends State<FFlagsTab> {
         ),
         onChanged: (newVal) {
           _flags[key] = newVal;
-          _saveFlagsToPrefs(); // auto‑save on text change
+          _saveFlagsToPrefs();
         },
       ),
     );
   }
 
-  // ─── Human‑readable names ──────────────────────────────────
   String _displayName(String key) {
     const map = {
       // Performance
@@ -429,26 +415,24 @@ class _FFlagsTabState extends State<FFlagsTab> {
     return map[key] ?? key;
   }
 
-  // ─── Save & apply via ScriptGenerator ──────────────────────
   void _saveAndApply() async {
-    // Show a snackbar to indicate progress
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Applying FFlags...')),
     );
     try {
-      // First persist to local prefs (already done via auto-save, but we do it again for safety)
       await _saveFlagsToPrefs();
-      // Let ScriptGenerator handle the generation and application
       await ScriptGenerator.generateAndApply(_flags);
-      // Success
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('FFlags applied successfully!')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('FFlags applied successfully!')),
+        );
+      }
     } catch (e) {
-      // Error
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error applying FFlags: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error applying FFlags: $e')),
+        );
+      }
     }
   }
 }
