@@ -1,3 +1,4 @@
+// lib/services/overlay_menu.dart
 import 'package:flutter/material.dart';
 import '../screens/fflags_tab.dart';
 import '../screens/sky_changer_tab.dart';
@@ -62,15 +63,23 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
           ),
           child: Column(
             children: [
+              // Title bar
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: const BoxDecoration(
                   color: Colors.white10,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                 ),
-                child: Row(
-                  children: const [
-                    Text('Safestrap Menu', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                child: const Row(
+                  children: [
+                    Text(
+                      'Safestrap Menu',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
                     Spacer(),
                     IconButton(
                       icon: Icon(Icons.close, color: Colors.white70, size: 20),
@@ -81,6 +90,7 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
                   ],
                 ),
               ),
+              // Tabs
               Expanded(
                 child: DefaultTabController(
                   length: 5,
