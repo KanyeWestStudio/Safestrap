@@ -47,13 +47,13 @@ class LauncherService {
       if (Platform.isWindows) {
         // Hands the URI to the registered protocol handler without a shell,
         // so `&` and friends in a profile can never be interpreted.
-        return _exec('rundll32', ['url.dll,FileProtocolHandler', target]);
+        return await _exec('rundll32', ['url.dll,FileProtocolHandler', target]);
       }
       if (Platform.isMacOS) {
-        return _exec('open', [target]);
+        return await _exec('open', [target]);
       }
       if (Platform.isLinux) {
-        return _exec('sober', [target]);
+        return await _exec('sober', [target]);
       }
       return false;
     } on ProcessException {
