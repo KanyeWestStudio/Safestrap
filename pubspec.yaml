@@ -7,6 +7,7 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
+  flutter_floatwing: ^0.2.1
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
