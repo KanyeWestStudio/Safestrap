@@ -12,7 +12,6 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_floatwing: ^0.3.1
   url_launcher: ^6.3.1
-  process_run: ^1.2.0
   shared_preferences: ^2.3.3
   lua_dardo_plus: ^0.3.0
 

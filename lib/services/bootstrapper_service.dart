@@ -14,21 +14,31 @@ class BootstrapperService {
   static bool get supportsOverlay => Platform.isAndroid;
 
   static Future<String> start() async {
-    late final LaunchProfile profile;
+    final LaunchProfile profile;
     try {
-      profile = ScriptEngine.run(await ConfigService.loadScript());
+      profile = await ScriptEngine.runGuarded(await ConfigService.loadScript());
     } on ScriptException catch (e) {
       return 'Config script failed: $e';
     }
     await ConfigService.saveProfile(profile);
 
     final flags = await FastFlagService.apply(profile);
-    final flagNote =
-        flags.result == FastFlagResult.noFlags ? '' : ' (${flags.detail})';
+    final flagNote = switch (flags.result) {
+      FastFlagResult.applied || FastFlagResult.failed => ' (${flags.detail})',
+      _ => '',
+    };
 
     final wantsOverlay = profile.overlay && supportsOverlay;
-    if (wantsOverlay && !await _ensureOverlayPermission()) {
-      return 'Grant overlay permission, then press Launch again';
+    if (wantsOverlay) {
+      final bool granted;
+      try {
+        granted = await _ensureOverlayPermission();
+      } on PlatformException catch (e) {
+        return 'Overlay permission unavailable: ${e.message}';
+      }
+      if (!granted) {
+        return 'Grant overlay permission, then press Launch again';
+      }
     }
 
     if (!await LauncherService.launchRoblox(profile)) {

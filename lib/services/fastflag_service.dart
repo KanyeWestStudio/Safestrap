@@ -2,7 +2,7 @@ import 'dart:io';
 
 import '../models/launch_profile.dart';
 
-enum FastFlagResult { applied, noFlags, unsupported, failed }
+enum FastFlagResult { applied, cleared, unsupported, failed }
 
 class FastFlagOutcome {
   const FastFlagOutcome(this.result, this.detail);
@@ -19,10 +19,6 @@ class FastFlagOutcome {
 /// reported as unsupported instead of silently doing nothing.
 class FastFlagService {
   static Future<FastFlagOutcome> apply(LaunchProfile profile) async {
-    if (profile.fastFlags.isEmpty) {
-      return const FastFlagOutcome(FastFlagResult.noFlags, 'no FastFlags set');
-    }
-
     final directories = _clientSettingsDirectories();
     if (directories.isEmpty) {
       return const FastFlagOutcome(
@@ -31,24 +27,38 @@ class FastFlagService {
       );
     }
 
+    // An empty profile has to overwrite the settings file, otherwise the flags
+    // from the previous launch stay active.
+    final clearing = profile.fastFlags.isEmpty;
     var written = 0;
     Object? lastError;
     for (final directory in directories) {
+      final file = File('${directory.path}${Platform.pathSeparator}'
+          'ClientAppSettings.json');
       try {
-        await directory.create(recursive: true);
-        final file = File('${directory.path}${Platform.pathSeparator}'
-            'ClientAppSettings.json');
-        await file.writeAsString(profile.fastFlagsJson);
+        if (clearing) {
+          if (!await file.exists()) continue;
+          await file.writeAsString('{}');
+        } else {
+          await directory.create(recursive: true);
+          await file.writeAsString(profile.fastFlagsJson);
+        }
         written++;
       } catch (e) {
         lastError = e;
       }
     }
 
-    if (written == 0) {
+    if (written == 0 && lastError != null) {
       return FastFlagOutcome(
         FastFlagResult.failed,
         'could not write ClientAppSettings.json: $lastError',
+      );
+    }
+    if (clearing) {
+      return FastFlagOutcome(
+        FastFlagResult.cleared,
+        written == 0 ? 'no FastFlags set' : 'FastFlags cleared',
       );
     }
     return FastFlagOutcome(

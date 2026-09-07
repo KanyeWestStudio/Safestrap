@@ -48,4 +48,38 @@ fflag("DFIntTaskSchedulerTargetFps", fps)
       throwsA(isA<ScriptException>()),
     );
   });
+
+  test('rejects private server codes that are not URI safe', () {
+    expect(
+      () => ScriptEngine.run('profile{ private_server = "a; rm -rf ~" }'),
+      throwsA(isA<ScriptException>()),
+    );
+    expect(
+      ScriptEngine.run('profile{ private_server = "abc-123_x" }')
+          .privateServerCode,
+      'abc-123_x',
+    );
+  });
+
+  test('runGuarded returns the profile', () async {
+    final profile = await ScriptEngine.runGuarded('profile{ name = "Async" }');
+    expect(profile.name, 'Async');
+  });
+
+  test('runGuarded reports script errors', () {
+    expect(
+      ScriptEngine.runGuarded('fflag('),
+      throwsA(isA<ScriptException>()),
+    );
+  });
+
+  test('runGuarded stops a script that never returns', () {
+    expect(
+      ScriptEngine.runGuarded(
+        'while true do end',
+        timeout: const Duration(milliseconds: 300),
+      ),
+      throwsA(isA<ScriptException>()),
+    );
+  });
 }
