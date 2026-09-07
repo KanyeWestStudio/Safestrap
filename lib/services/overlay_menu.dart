@@ -5,7 +5,6 @@ import '../screens/executor_tab.dart';
 import '../screens/client_tab.dart';
 import '../screens/lag_tab.dart';
 
-// ─── Service to show/hide overlay inside the main app ───────────
 class OverlayMenu {
   static OverlayEntry? _entry;
 
@@ -23,7 +22,6 @@ class OverlayMenu {
   }
 }
 
-// ─── Public widget used for both in‑app overlay and floating window ──
 class OverlayFloatingWidget extends StatefulWidget {
   const OverlayFloatingWidget({super.key});
 
@@ -60,38 +58,36 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
             color: Colors.black87,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: Colors.white24, width: 1),
-            boxShadow: [BoxShadow(color: Colors.black54, blurRadius: 20)],
+            boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 20)],
           ),
           child: Column(
             children: [
-              // Title bar with close button
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.white10,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                 ),
                 child: Row(
-                  children: [
-                    const Text('Safestrap Menu', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-                    const Spacer(),
+                  children: const [
+                    Text('Safestrap Menu', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                    Spacer(),
                     IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white70, size: 20),
+                      icon: Icon(Icons.close, color: Colors.white70, size: 20),
                       onPressed: OverlayMenu.hide,
                       padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
+                      constraints: BoxConstraints(),
                     ),
                   ],
                 ),
               ),
-              // Tab bar and content
               Expanded(
                 child: DefaultTabController(
                   length: 5,
                   child: Column(
                     children: [
-                      TabBar(
-                        tabs: const [
+                      const TabBar(
+                        tabs: [
                           Tab(text: 'FFlags'),
                           Tab(text: 'Sky'),
                           Tab(text: 'Executor'),
@@ -103,11 +99,11 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
                         indicatorColor: Colors.blue,
                         indicatorSize: TabBarIndicatorSize.tab,
                         isScrollable: false,
-                        labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                        labelStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                       ),
                       Expanded(
                         child: TabBarView(
-                          children: const [
+                          children: [
                             FFlagsTab(),
                             SkyChangerTab(),
                             ExecutorTab(),
