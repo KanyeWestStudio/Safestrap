@@ -1,21 +1,19 @@
 name: safestrap
-description: Safe multi-platform Roblox bootstrapper built with Flutter.
+description: Safe Roblox Bootstrapper
 publish_to: 'none'
-version: 0.1.0+1
+version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.5.0 <4.0.0'
 
 dependencies:
-    flutter_floatwing: ^0.3.1
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  path_provider: ^2.1.4
-  shared_preferences: ^2.3.2
-  process_run: ^0.14.2
-  url_launcher: ^6.3.0
-  window_manager: ^0.4.2
+  flutter_floatwing: ^0.3.1
+  url_launcher: ^6.3.1
+  process_run: ^1.2.0
+  shared_preferences: ^2.3.3
 
 dev_dependencies:
   flutter_test:
@@ -24,6 +22,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
-  assets:
-    - assets/
