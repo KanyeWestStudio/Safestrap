@@ -2,7 +2,7 @@ import 'dart:io';
 
 import '../models/launch_profile.dart';
 
-enum FastFlagResult { applied, noFlags, unsupported, failed }
+enum FastFlagResult { applied, cleared, unsupported, failed }
 
 class FastFlagOutcome {
   const FastFlagOutcome(this.result, this.detail);
@@ -19,10 +19,6 @@ class FastFlagOutcome {
 /// reported as unsupported instead of silently doing nothing.
 class FastFlagService {
   static Future<FastFlagOutcome> apply(LaunchProfile profile) async {
-    if (profile.fastFlags.isEmpty) {
-      return const FastFlagOutcome(FastFlagResult.noFlags, 'no FastFlags set');
-    }
-
     final directories = _clientSettingsDirectories();
     if (directories.isEmpty) {
       return const FastFlagOutcome(
@@ -31,24 +27,45 @@ class FastFlagService {
       );
     }
 
+    // An empty profile has to overwrite the settings file, otherwise the flags
+    // from the previous launch stay active.
+    final clearing = profile.fastFlags.isEmpty;
     var written = 0;
+    var failed = 0;
     Object? lastError;
     for (final directory in directories) {
+      final file = File('${directory.path}${Platform.pathSeparator}'
+          'ClientAppSettings.json');
       try {
-        await directory.create(recursive: true);
-        final file = File('${directory.path}${Platform.pathSeparator}'
-            'ClientAppSettings.json');
-        await file.writeAsString(profile.fastFlagsJson);
+        if (clearing) {
+          if (!await file.exists()) continue;
+          await file.writeAsString('{}');
+        } else {
+          await directory.create(recursive: true);
+          await file.writeAsString(profile.fastFlagsJson);
+        }
         written++;
       } catch (e) {
+        failed++;
         lastError = e;
       }
     }
 
-    if (written == 0) {
+    // A partial update still leaves stale flags in the installs that were not
+    // written, so any failure is reported instead of the successes hiding it.
+    if (failed > 0) {
       return FastFlagOutcome(
         FastFlagResult.failed,
-        'could not write ClientAppSettings.json: $lastError',
+        written == 0
+            ? 'could not write ClientAppSettings.json: $lastError'
+            : '$failed of ${written + failed} Roblox installs kept their old '
+                'FastFlags: $lastError',
+      );
+    }
+    if (clearing) {
+      return FastFlagOutcome(
+        FastFlagResult.cleared,
+        written == 0 ? 'no FastFlags set' : 'FastFlags cleared',
       );
     }
     return FastFlagOutcome(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_floatwing/flutter_floatwing.dart';
 
 import '../models/launch_profile.dart';
@@ -16,6 +17,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final _scriptController = TextEditingController();
   bool _overlayGranted = false;
+  bool _running = false;
   LaunchProfile? _preview;
   String? _error;
 
@@ -37,21 +39,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _scriptController.text = script;
 
     if (!BootstrapperService.supportsOverlay) return;
-    final granted = await FloatwingPlugin().checkPermission();
-    if (mounted) setState(() => _overlayGranted = granted);
+    try {
+      final granted = await FloatwingPlugin().checkPermission();
+      if (mounted) setState(() => _overlayGranted = granted);
+    } on PlatformException catch (e) {
+      if (mounted) setState(() => _error = 'Overlay unavailable: ${e.message}');
+    }
   }
 
   Future<void> _requestOverlay() async {
-    if (await FloatwingPlugin().checkPermission()) {
-      if (mounted) setState(() => _overlayGranted = true);
-      return;
+    try {
+      if (await FloatwingPlugin().checkPermission()) {
+        if (mounted) setState(() => _overlayGranted = true);
+        return;
+      }
+      await FloatwingPlugin().openPermissionSetting();
+    } on PlatformException catch (e) {
+      if (mounted) setState(() => _error = 'Overlay unavailable: ${e.message}');
     }
-    await FloatwingPlugin().openPermissionSetting();
   }
 
   Future<void> _runScript() async {
+    setState(() => _running = true);
     try {
-      final profile = ScriptEngine.run(_scriptController.text);
+      final profile = await ScriptEngine.runGuarded(_scriptController.text);
       await ConfigService.saveScript(_scriptController.text);
       await ConfigService.saveProfile(profile);
       if (!mounted) return;
@@ -65,6 +76,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _preview = null;
         _error = e.message;
       });
+    } finally {
+      if (mounted) setState(() => _running = false);
     }
   }
 
@@ -105,7 +118,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 8),
           FilledButton.icon(
-            onPressed: _runScript,
+            onPressed: _running ? null : _runScript,
             icon: const Icon(Icons.play_arrow_rounded),
             label: const Text('Run & save'),
           ),

@@ -16,10 +16,16 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _launch() async {
     setState(() => _isLaunching = true);
 
-    final message = await BootstrapperService.start();
+    String message;
+    try {
+      message = await BootstrapperService.start();
+    } catch (e) {
+      message = 'Launch failed: $e';
+    } finally {
+      if (mounted) setState(() => _isLaunching = false);
+    }
 
     if (mounted) {
-      setState(() => _isLaunching = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
       );

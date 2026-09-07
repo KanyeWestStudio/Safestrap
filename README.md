@@ -44,10 +44,13 @@ Globals available to a script:
 
 `io`, `os`, `package`, `require`, `load`, `loadfile` and `dofile` are removed
 from the sandbox, so scripts can compute values but cannot touch the device.
+Scripts run in their own isolate with a 5 second budget, and `private_server`
+codes are restricted to `A-Z a-z 0-9 _ -` because they end up in a launch URI.
 
 FastFlags are written to `ClientAppSettings.json` of a desktop Roblox install
-(Windows, macOS, Sober on Linux). Android sandboxes the Roblox data directory,
-so flags there are stored in the profile only.
+(Windows, macOS, Sober on Linux); a script that sets no flags clears the file
+again. Android sandboxes the Roblox data directory, so flags there are stored
+in the profile only.
 
 ## Getting Started
 
