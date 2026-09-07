@@ -55,11 +55,11 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
           key: _key,
           width: 380,
           height: 500,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Colors.black87,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white24, width: 1),
-            boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 20)],
+            borderRadius: BorderRadius.all(Radius.circular(20)),
+            border: Border.fromBorderSide(BorderSide(color: Colors.white24, width: 1)),
+            boxShadow: [BoxShadow(color: Colors.black54, blurRadius: 20)],
           ),
           child: Column(
             children: [
@@ -111,8 +111,8 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
                         isScrollable: false,
                         labelStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                       ),
-                      Expanded(
-                        child: const TabBarView(
+                      const Expanded(
+                        child: TabBarView(
                           children: [
                             FFlagsTab(),
                             SkyChangerTab(),
