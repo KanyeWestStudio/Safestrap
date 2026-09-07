@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_floatwing/flutter_floatwing.dart';
 
 import 'app.dart';
-import 'overlay_menu.dart';
+import 'services/overlay_menu.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

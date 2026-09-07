@@ -7,6 +7,15 @@ build/
 .flutter-plugins
 .flutter-plugins-dependencies
 
+# Generated platform projects (recreated by `flutter create`)
+.metadata
+android/
+ios/
+linux/
+macos/
+windows/
+web/
+
 # IDE
 .idea/
 .vscode/

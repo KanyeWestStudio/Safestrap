@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_floatwing/flutter_floatwing.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import '../models/launch_profile.dart';
+import '../services/bootstrapper_service.dart';
+import '../services/config_service.dart';
+import '../services/script_engine.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -10,8 +14,10 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  final _scriptController = TextEditingController();
   bool _overlayGranted = false;
-  final _fflagsController = TextEditingController();
+  LaunchProfile? _preview;
+  String? _error;
 
   @override
   void initState() {
@@ -19,74 +25,111 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _load();
   }
 
-  Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
-    _fflagsController.text = prefs.getString('fastflags') ?? '';
+  @override
+  void dispose() {
+    _scriptController.dispose();
+    super.dispose();
+  }
 
-    try {
-      final granted = await FloatwingPlugin().checkPermission();
-      if (mounted) setState(() => _overlayGranted = granted);
-    } catch (_) {}
+  Future<void> _load() async {
+    final script = await ConfigService.loadScript();
+    if (!mounted) return;
+    _scriptController.text = script;
+
+    if (!BootstrapperService.supportsOverlay) return;
+    final granted = await FloatwingPlugin().checkPermission();
+    if (mounted) setState(() => _overlayGranted = granted);
   }
 
   Future<void> _requestOverlay() async {
-    try {
-      final granted = await FloatwingPlugin().checkPermission();
-      if (granted) {
-        setState(() => _overlayGranted = true);
-        return;
-      }
-      await FloatwingPlugin().openPermissionSetting();
-    } catch (_) {}
+    if (await FloatwingPlugin().checkPermission()) {
+      if (mounted) setState(() => _overlayGranted = true);
+      return;
+    }
+    await FloatwingPlugin().openPermissionSetting();
   }
 
-  Future<void> _saveFlags() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('fastflags', _fflagsController.text);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('FastFlags saved locally')),
-    );
+  Future<void> _runScript() async {
+    try {
+      final profile = ScriptEngine.run(_scriptController.text);
+      await ConfigService.saveScript(_scriptController.text);
+      await ConfigService.saveProfile(profile);
+      if (!mounted) return;
+      setState(() {
+        _preview = profile;
+        _error = null;
+      });
+    } on ScriptException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _preview = null;
+        _error = e.message;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final preview = _preview;
+    final error = _error;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          ListTile(
-            leading: const Icon(Icons.layers_rounded),
-            title: const Text('Overlay (draw over apps)'),
-            subtitle: Text(_overlayGranted ? 'Granted' : 'Not granted'),
-            trailing: Switch(
-              value: _overlayGranted,
-              onChanged: (_) => _requestOverlay(),
-            ),
-          ),
-          const Divider(),
-          const ListTile(
-            leading: Icon(Icons.tune_rounded),
-            title: Text('FastFlags'),
-            subtitle:
-                Text('ClientAppSettings.json — requires root on Android'),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: TextField(
-              controller: _fflagsController,
-              maxLines: 8,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: '{\n  "FFlagEnableX": true\n}',
+          if (BootstrapperService.supportsOverlay)
+            ListTile(
+              leading: const Icon(Icons.layers_rounded),
+              title: const Text('Overlay (draw over apps)'),
+              subtitle: Text(_overlayGranted ? 'Granted' : 'Not granted'),
+              trailing: Switch(
+                value: _overlayGranted,
+                onChanged: (_) => _requestOverlay(),
               ),
             ),
+          const Divider(),
+          const ListTile(
+            leading: Icon(Icons.code_rounded),
+            title: Text('Config script'),
+            subtitle: Text(
+              'Lua 5.3 script. Use fflag/fflags to set FastFlags and '
+              'profile{} for the launch profile.',
+            ),
           ),
-          TextButton(
-            onPressed: _saveFlags,
-            child: const Text('Save FastFlags'),
+          TextField(
+            controller: _scriptController,
+            maxLines: 14,
+            style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+            decoration: const InputDecoration(border: OutlineInputBorder()),
           ),
+          const SizedBox(height: 8),
+          FilledButton.icon(
+            onPressed: _runScript,
+            icon: const Icon(Icons.play_arrow_rounded),
+            label: const Text('Run & save'),
+          ),
+          if (error != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Text(
+                error,
+                style: const TextStyle(color: Colors.redAccent),
+              ),
+            ),
+          if (preview != null) ...[
+            const SizedBox(height: 16),
+            Text('Profile: ${preview.name}'),
+            if (preview.placeId != null) Text('Place: ${preview.placeId}'),
+            Text('Overlay: ${preview.overlay ? 'on' : 'off'}'),
+            const SizedBox(height: 8),
+            const Text('FastFlags'),
+            Text(
+              preview.fastFlagsJson,
+              style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+            ),
+            for (final line in preview.logs) Text('› $line'),
+          ],
         ],
       ),
     );
