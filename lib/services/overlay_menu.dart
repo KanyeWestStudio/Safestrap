@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../screens/fflags_tab.dart';
 import '../screens/sky_changer_tab.dart';
 import '../screens/executor_tab.dart';
 import '../screens/client_tab.dart';
 import '../screens/lag_tab.dart';
 
+// ─── Service to show/hide overlay inside the main app ───────────
 class OverlayMenu {
   static OverlayEntry? _entry;
 
   static void show(BuildContext context) {
     if (_entry != null) return;
     _entry = OverlayEntry(
-      builder: (context) => const _OverlayWidget(),
+      builder: (context) => const OverlayFloatingWidget(),
     );
     Overlay.of(context).insert(_entry!);
   }
@@ -23,14 +23,15 @@ class OverlayMenu {
   }
 }
 
-class _OverlayWidget extends StatefulWidget {
-  const _OverlayWidget();
+// ─── Public widget used for both in‑app overlay and floating window ──
+class OverlayFloatingWidget extends StatefulWidget {
+  const OverlayFloatingWidget({super.key});
 
   @override
-  State<_OverlayWidget> createState() => __OverlayWidgetState();
+  State<OverlayFloatingWidget> createState() => _OverlayFloatingWidgetState();
 }
 
-class __OverlayWidgetState extends State<_OverlayWidget> {
+class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
   double _dx = 0, _dy = 0;
   bool _isDragging = false;
   final GlobalKey _key = GlobalKey();
