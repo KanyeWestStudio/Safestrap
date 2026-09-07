@@ -31,6 +31,7 @@ class FastFlagService {
     // from the previous launch stay active.
     final clearing = profile.fastFlags.isEmpty;
     var written = 0;
+    var failed = 0;
     Object? lastError;
     for (final directory in directories) {
       final file = File('${directory.path}${Platform.pathSeparator}'
@@ -45,14 +46,20 @@ class FastFlagService {
         }
         written++;
       } catch (e) {
+        failed++;
         lastError = e;
       }
     }
 
-    if (written == 0 && lastError != null) {
+    // A partial update still leaves stale flags in the installs that were not
+    // written, so any failure is reported instead of the successes hiding it.
+    if (failed > 0) {
       return FastFlagOutcome(
         FastFlagResult.failed,
-        'could not write ClientAppSettings.json: $lastError',
+        written == 0
+            ? 'could not write ClientAppSettings.json: $lastError'
+            : '$failed of ${written + failed} Roblox installs kept their old '
+                'FastFlags: $lastError',
       );
     }
     if (clearing) {
