@@ -3,6 +3,7 @@ name: Build Safestrap APK
 on:
   push:
     branches: [main, master]
+  pull_request:
   workflow_dispatch:
 
 jobs:
@@ -24,15 +25,23 @@ jobs:
         with:
           channel: stable
 
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
       - name: Generate Android project
-        run: flutter create --platforms=android --org com.kanyeweststudio .
+        run: |
+          flutter create --platforms=android --org com.kanyeweststudio .
+          rm -f test/widget_test.dart
 
       - name: Patch AndroidManifest
         run: |
           sed -i 's#<application#<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />\n    <queries>\n        <package android:name="com.roblox.client" />\n    </queries>\n    <application#' android/app/src/main/AndroidManifest.xml
-
-      - name: Install dependencies
-        run: flutter pub get
 
       - name: Build APK
         run: flutter build apk --release
