@@ -112,7 +112,7 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
                         labelStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                       ),
                       Expanded(
-                        child: TabBarView(
+                        child: const TabBarView(
                           children: [
                             FFlagsTab(),
                             SkyChangerTab(),
