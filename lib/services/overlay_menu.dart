@@ -1,5 +1,5 @@
-// lib/services/overlay_menu.dart
 import 'package:flutter/material.dart';
+
 import '../screens/fflags_tab.dart';
 import '../screens/sky_changer_tab.dart';
 import '../screens/executor_tab.dart';
@@ -11,9 +11,11 @@ class OverlayMenu {
 
   static void show(BuildContext context) {
     if (_entry != null) return;
+
     _entry = OverlayEntry(
       builder: (context) => const OverlayFloatingWidget(),
     );
+
     Overlay.of(context).insert(_entry!);
   }
 
@@ -27,12 +29,15 @@ class OverlayFloatingWidget extends StatefulWidget {
   const OverlayFloatingWidget({super.key});
 
   @override
-  State<OverlayFloatingWidget> createState() => _OverlayFloatingWidgetState();
+  State<OverlayFloatingWidget> createState() =>
+      _OverlayFloatingWidgetState();
 }
 
 class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
-  double _dx = 0, _dy = 0;
+  double _dx = 0;
+  double _dy = 0;
   bool _isDragging = false;
+
   final GlobalKey _key = GlobalKey();
 
   @override
@@ -57,18 +62,35 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
           height: 500,
           decoration: const BoxDecoration(
             color: Colors.black87,
-            borderRadius: BorderRadius.all(Radius.circular(20)),
-            border: Border.fromBorderSide(BorderSide(color: Colors.white24, width: 1)),
-            boxShadow: [BoxShadow(color: Colors.black54, blurRadius: 20)],
+            borderRadius: BorderRadius.all(
+              Radius.circular(20),
+            ),
+            border: Border.fromBorderSide(
+              BorderSide(
+                color: Colors.white24,
+                width: 1,
+              ),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black54,
+                blurRadius: 20,
+              ),
+            ],
           ),
           child: Column(
             children: [
               // Title bar
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 decoration: const BoxDecoration(
                   color: Colors.white10,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
                 ),
                 child: const Row(
                   children: [
@@ -82,7 +104,11 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
                     ),
                     Spacer(),
                     IconButton(
-                      icon: Icon(Icons.close, color: Colors.white70, size: 20),
+                      icon: Icon(
+                        Icons.close,
+                        color: Colors.white70,
+                        size: 20,
+                      ),
                       onPressed: OverlayMenu.hide,
                       padding: EdgeInsets.zero,
                       constraints: BoxConstraints(),
@@ -90,6 +116,7 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
                   ],
                 ),
               ),
+
               // Tabs
               Expanded(
                 child: DefaultTabController(
@@ -109,7 +136,10 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
                         indicatorColor: Colors.blue,
                         indicatorSize: TabBarIndicatorSize.tab,
                         isScrollable: false,
-                        labelStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                        labelStyle: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       const Expanded(
                         child: TabBarView(
