@@ -79,77 +79,80 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
             ],
           ),
           child: DefaultTabController(
-           length: 5,
+            length: 5,
             child: Column(
-            children: [
-              // Title bar
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                decoration: const BoxDecoration(
-                  color: Colors.white10,
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(20),
+              children: [
+                // Title bar
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: const BoxDecoration(
+                    color: Colors.white10,
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(20),
+                    ),
+                  ),
+                  child: const Row(
+                    children: [
+                      Text(
+                        'Safestrap Menu',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      Spacer(),
+                      IconButton(
+                        icon: Icon(
+                          Icons.close,
+                          color: Colors.white70,
+                          size: 20,
+                        ),
+                        onPressed: OverlayMenu.hide,
+                        padding: EdgeInsets.zero,
+                        constraints: BoxConstraints(),
+                      ),
+                    ],
                   ),
                 ),
-                child: const Row(
-                  children: [
-                    Text(
-                      'Safestrap Menu',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    Spacer(),
-                    IconButton(
-                      icon: Icon(
-                        Icons.close,
-                        color: Colors.white70,
-                        size: 20,
-                      ),
-                      onPressed: OverlayMenu.hide,
-                      padding: EdgeInsets.zero,
-                      constraints: BoxConstraints(),
-                    ),
-                  ],
-                ),
-              ),
 
-              TabBar(
-                tabs: const [
-                  Tab(text: 'FFlags'),
-                  Tab(text: 'Sky'),
-                  Tab(text: 'Executor'),
-                  Tab(text: 'Client'),
-                  Tab(text: 'Lag'),
-                ],
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.white54,
-                indicatorColor: Colors.blue,
-                indicatorSize: TabBarIndicatorSize.tab,
-                isScrollable: false,
-                labelStyle: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const Expanded(
-                child: TabBarView(
-                  children: [
-                    FFlagsTab(),
-                    SkyChangerTab(),
-                    ExecutorTab(),
-                    ClientTab(),
-                    LagTab(),
+                TabBar(
+                  tabs: const [
+                    Tab(text: 'FFlags'),
+                    Tab(text: 'Sky'),
+                    Tab(text: 'Executor'),
+                    Tab(text: 'Client'),
+                    Tab(text: 'Lag'),
                   ],
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.white54,
+                  indicatorColor: Colors.blue,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  isScrollable: false,
+                  labelStyle: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-            ],
+                const Expanded(
+                  child: TabBarView(
+                    children: [
+                      FFlagsTab(),
+                      SkyChangerTab(),
+                      ExecutorTab(),
+                      ClientTab(),
+                      LagTab(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+}
