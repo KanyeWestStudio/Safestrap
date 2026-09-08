@@ -117,20 +117,13 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
                 ),
               ),
 
-              // Tabs
-              Expanded(
-                child: DefaultTabController(
-                  length: 5,
-                  child: Column(
-                    children: [
-                      const TabBar(
-                        tabs: [
-                          Tab(text: 'FFlags'),
-                          Tab(text: 'Sky'),
-                          Tab(text: 'Executor'),
-                          Tab(text: 'Client'),
-                          Tab(text: 'Lag'),
-                        ],
+              tabs: const [
+              Tab(text: 'FFlags'),
+              Tab(text: 'Sky'),
+              Tab(text: 'Executor'),
+                Tab(text: 'Client'),
+                 Tab(text: 'Lag'),
+                  ],
                         labelColor: Colors.white,
                         unselectedLabelColor: Colors.white54,
                         indicatorColor: Colors.blue,
