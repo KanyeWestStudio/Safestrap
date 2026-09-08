@@ -78,7 +78,9 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
               ),
             ],
           ),
-          child: Column(
+          child: DefaultTabController(
+           length: 5,
+            child: Column(
             children: [
               // Title bar
               Container(
@@ -117,36 +119,33 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
                 ),
               ),
 
-              tabs: const [
-              Tab(text: 'FFlags'),
-              Tab(text: 'Sky'),
-              Tab(text: 'Executor'),
-                Tab(text: 'Client'),
-                 Tab(text: 'Lag'),
+              TabBar(
+                tabs: const [
+                  Tab(text: 'FFlags'),
+                  Tab(text: 'Sky'),
+                  Tab(text: 'Executor'),
+                  Tab(text: 'Client'),
+                  Tab(text: 'Lag'),
+                ],
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white54,
+                indicatorColor: Colors.blue,
+                indicatorSize: TabBarIndicatorSize.tab,
+                isScrollable: false,
+                labelStyle: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Expanded(
+                child: TabBarView(
+                  children: [
+                    FFlagsTab(),
+                    SkyChangerTab(),
+                    ExecutorTab(),
+                    ClientTab(),
+                    LagTab(),
                   ],
-                        labelColor: Colors.white,
-                        unselectedLabelColor: Colors.white54,
-                        indicatorColor: Colors.blue,
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        isScrollable: false,
-                        labelStyle: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const Expanded(
-                        child: TabBarView(
-                          children: [
-                            FFlagsTab(),
-                            SkyChangerTab(),
-                            ExecutorTab(),
-                            ClientTab(),
-                            LagTab(),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
             ],
@@ -154,5 +153,3 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
         ),
       ),
     );
-  }
-}
