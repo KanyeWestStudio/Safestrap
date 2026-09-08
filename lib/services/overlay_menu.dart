@@ -5,6 +5,7 @@ import '../screens/sky_changer_tab.dart';
 import '../screens/executor_tab.dart';
 import '../screens/client_tab.dart';
 import '../screens/lag_tab.dart';
+import '.. /screens/font_changer_tab.dart';
 
 class OverlayMenu {
   static OverlayEntry? _entry;
@@ -126,7 +127,8 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
                     Tab(text: 'Executor'),
                     Tab(text: 'Client'),
                     Tab(text: 'Lag'),
-                  ],
+                    Tab(text: 'Font'), 
+                  ]
                   labelColor: Colors.white,
                   unselectedLabelColor: Colors.white54,
                   indicatorColor: Colors.blue,
@@ -145,7 +147,8 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
                       ExecutorTab(),
                       ClientTab(),
                       LagTab(),
-                    ],
+                      FontTab(), 
+                    ]
                   ),
                 ),
               ],
@@ -155,4 +158,3 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
       ),
     );
   }
-}
