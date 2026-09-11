@@ -91,7 +91,6 @@ class FontChangerService {
     await prefs.setString(_fontKey, font.id);
   }
 
-  // Used by font_changer_tab.dart.
   static Future<FontPreset?> pickCustomFont() async {
     try {
       if (Platform.isAndroid) {
@@ -108,8 +107,7 @@ class FontChangerService {
         return null;
       }
 
-      final sourcePath = result.files.single.path!;
-      final sourceFile = File(sourcePath);
+      final sourceFile = File(result.files.single.path!);
 
       if (!await sourceFile.exists()) {
         return null;
@@ -139,17 +137,12 @@ class FontChangerService {
     }
   }
 
-  // Used by font_changer_tab.dart.
   static Future<bool> applyFont(FontPreset font) async {
     try {
-      await setCurrentFont(font);
-
-      // Load the asset to make sure the bundled font exists.
       if (font.assetPath != null) {
         await rootBundle.load(font.assetPath!);
       }
 
-      // Make sure a custom font still exists.
       if (font.filePath != null) {
         final file = File(font.filePath!);
 
@@ -158,35 +151,41 @@ class FontChangerService {
         }
       }
 
+      await setCurrentFont(font);
       return true;
     } catch (_) {
       return false;
     }
   }
 
-  // Used by font_changer_tab.dart.
   static Future<void> resetToDefault() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_fontKey);
   }
 
-  // Used by font_changer_tab.dart for previewing a font.
-  static Future<ByteData?> loadFontForPreview(FontPreset font) async {
-    try {
-      if (font.assetPath != null) {
-        return await rootBundle.load(font.assetPath!);
+  /// Loads a font and returns a FontLoader for the preview screen.
+  static Future<FontLoader> loadFontForPreview(FontPreset font) async {
+    final loader = FontLoader(font.id);
+
+    if (font.assetPath != null) {
+      final byteData = await rootBundle.load(font.assetPath!);
+      loader.addFont(Future.value(byteData));
+    } else if (font.filePath != null) {
+      final file = File(font.filePath!);
+
+      if (!await file.exists()) {
+        throw Exception('Font file not found.');
       }
 
-      if (font.filePath != null) {
-        final bytes = await File(font.filePath!).readAsBytes();
+      final bytes = await file.readAsBytes();
+      final byteData = ByteData.sublistView(bytes);
 
-        return ByteData.sublistView(bytes);
-      }
-
-      return null;
-    } catch (_) {
-      return null;
+      loader.addFont(Future.value(byteData));
+    } else {
+      throw Exception('No font file specified.');
     }
+
+    return loader;
   }
 
   static Future<List<FontPreset>> getCustomFonts() async {
@@ -254,7 +253,6 @@ class FontChangerService {
 
   static Future<Directory> _getCustomFontsDirectory() async {
     final appDirectory = await getApplicationSupportDirectory();
-
     return Directory('${appDirectory.path}/fonts');
   }
 
