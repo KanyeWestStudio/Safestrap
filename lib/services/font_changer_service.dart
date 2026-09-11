@@ -11,7 +11,6 @@ import '../models/font_preset.dart';
 class FontChangerService {
   static const String _fontKey = 'selected_font';
 
-  /// Built-in font presets.
   static List<FontPreset> getPresetFonts() {
     return const [
       FontPreset(
@@ -62,7 +61,6 @@ class FontChangerService {
     ];
   }
 
-  /// Returns the currently selected font.
   static Future<FontPreset?> getCurrentFont() async {
     final prefs = await SharedPreferences.getInstance();
     final id = prefs.getString(_fontKey);
@@ -71,14 +69,12 @@ class FontChangerService {
       return null;
     }
 
-    // Check built-in presets first.
     for (final preset in getPresetFonts()) {
       if (preset.id == id) {
         return preset;
       }
     }
 
-    // Check whether the selected font is a custom font.
     final customFonts = await getCustomFonts();
 
     for (final font in customFonts) {
@@ -90,14 +86,13 @@ class FontChangerService {
     return null;
   }
 
-  /// Saves the selected font.
   static Future<void> setCurrentFont(FontPreset font) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_fontKey, font.id);
   }
 
-  /// Opens a file picker and imports a custom font.
-  static Future<FontPreset?> importCustomFont() async {
+  // Used by font_changer_tab.dart.
+  static Future<FontPreset?> pickCustomFont() async {
     try {
       if (Platform.isAndroid) {
         await Permission.storage.request();
@@ -131,10 +126,11 @@ class FontChangerService {
 
       await sourceFile.copy(destination.path);
 
-      final id = 'custom_${fileName.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '_')}';
-
       return FontPreset(
-        id: id,
+        id: 'custom_${fileName.replaceAll(
+          RegExp(r'[^a-zA-Z0-9_]'),
+          '_',
+        )}',
         displayName: fileName,
         filePath: destination.path,
       );
@@ -143,7 +139,56 @@ class FontChangerService {
     }
   }
 
-  /// Gets all imported custom fonts.
+  // Used by font_changer_tab.dart.
+  static Future<bool> applyFont(FontPreset font) async {
+    try {
+      await setCurrentFont(font);
+
+      // Load the asset to make sure the bundled font exists.
+      if (font.assetPath != null) {
+        await rootBundle.load(font.assetPath!);
+      }
+
+      // Make sure a custom font still exists.
+      if (font.filePath != null) {
+        final file = File(font.filePath!);
+
+        if (!await file.exists()) {
+          return false;
+        }
+      }
+
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // Used by font_changer_tab.dart.
+  static Future<void> resetToDefault() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_fontKey);
+  }
+
+  // Used by font_changer_tab.dart for previewing a font.
+  static Future<ByteData?> loadFontForPreview(FontPreset font) async {
+    try {
+      if (font.assetPath != null) {
+        return await rootBundle.load(font.assetPath!);
+      }
+
+      if (font.filePath != null) {
+        final bytes = await File(font.filePath!).readAsBytes();
+
+        return ByteData.sublistView(bytes);
+      }
+
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   static Future<List<FontPreset>> getCustomFonts() async {
     try {
       final directory = await _getCustomFontsDirectory();
@@ -154,31 +199,26 @@ class FontChangerService {
 
       final files = await directory.list().toList();
 
-      return files
-          .whereType<File>()
-          .where((file) {
-            final extension = file.path.split('.').last.toLowerCase();
-            return extension == 'ttf' || extension == 'otf';
-          })
-          .map((file) {
-            final fileName = file.path.split(Platform.pathSeparator).last;
+      return files.whereType<File>().where((file) {
+        final extension = file.path.split('.').last.toLowerCase();
+        return extension == 'ttf' || extension == 'otf';
+      }).map((file) {
+        final fileName = file.path.split(Platform.pathSeparator).last;
 
-            return FontPreset(
-              id: 'custom_${fileName.replaceAll(
-                RegExp(r'[^a-zA-Z0-9_]'),
-                '_',
-              )}',
-              displayName: fileName,
-              filePath: file.path,
-            );
-          })
-          .toList();
+        return FontPreset(
+          id: 'custom_${fileName.replaceAll(
+            RegExp(r'[^a-zA-Z0-9_]'),
+            '_',
+          )}',
+          displayName: fileName,
+          filePath: file.path,
+        );
+      }).toList();
     } catch (_) {
       return [];
     }
   }
 
-  /// Deletes a custom font.
   static Future<bool> deleteCustomFont(FontPreset font) async {
     try {
       if (!font.isCustom || font.filePath == null) {
@@ -204,7 +244,6 @@ class FontChangerService {
     }
   }
 
-  /// Loads font bytes from a built-in asset.
   static Future<ByteData> getFontBytes(FontPreset font) async {
     if (font.assetPath == null) {
       throw Exception('This font does not have an asset path.');
@@ -213,13 +252,12 @@ class FontChangerService {
     return rootBundle.load(font.assetPath!);
   }
 
-  /// Gets the directory where custom fonts are stored.
   static Future<Directory> _getCustomFontsDirectory() async {
     final appDirectory = await getApplicationSupportDirectory();
+
     return Directory('${appDirectory.path}/fonts');
   }
 
-  /// Returns the Roblox fonts directory on supported desktop platforms.
   static Future<Directory?> getRobloxFontsDirectory() async {
     if (Platform.isWindows) {
       final localAppData = Platform.environment['LOCALAPPDATA'];
@@ -228,9 +266,7 @@ class FontChangerService {
         return null;
       }
 
-      return Directory(
-        '$localAppData/Roblox/Versions',
-      );
+      return Directory('$localAppData/Roblox/Versions');
     }
 
     if (Platform.isMacOS) {
@@ -240,9 +276,7 @@ class FontChangerService {
         return null;
       }
 
-      return Directory(
-        '$home/Library/Application Support/Roblox',
-      );
+      return Directory('$home/Library/Application Support/Roblox');
     }
 
     return null;
