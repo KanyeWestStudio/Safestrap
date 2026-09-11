@@ -5,7 +5,7 @@ import '../screens/sky_changer_tab.dart';
 import '../screens/executor_tab.dart';
 import '../screens/client_tab.dart';
 import '../screens/lag_tab.dart';
-import '.. /screens/font_changer_tab.dart';
+import '../screens/font_changer_tab.dart';
 
 class OverlayMenu {
   static OverlayEntry? _entry;
@@ -147,7 +147,7 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
                       ExecutorTab(),
                       ClientTab(),
                       LagTab(),
-                      FontTab(), 
+                      FontChangerTab(),
                     ]
                   ),
                 ),
