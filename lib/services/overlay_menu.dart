@@ -47,7 +47,9 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
       left: _dx,
       top: _dy,
       child: GestureDetector(
-        onPanStart: (details) => _isDragging = true,
+        onPanStart: (details) {
+          _isDragging = true;
+        },
         onPanUpdate: (details) {
           if (_isDragging) {
             setState(() {
@@ -56,7 +58,9 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
             });
           }
         },
-        onPanEnd: (details) => _isDragging = false,
+        onPanEnd: (details) {
+          _isDragging = false;
+        },
         child: Container(
           key: _key,
           width: 380,
@@ -80,7 +84,7 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
             ],
           ),
           child: DefaultTabController(
-            length: 5,
+            length: 6,
             child: Column(
               children: [
                 // Title bar
@@ -120,6 +124,7 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
                   ),
                 ),
 
+                // Tabs
                 TabBar(
                   tabs: const [
                     Tab(text: 'FFlags'),
@@ -127,8 +132,8 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
                     Tab(text: 'Executor'),
                     Tab(text: 'Client'),
                     Tab(text: 'Lag'),
-                    Tab(text: 'Font'), 
-                  ]
+                    Tab(text: 'Font'),
+                  ],
                   labelColor: Colors.white,
                   unselectedLabelColor: Colors.white54,
                   indicatorColor: Colors.blue,
@@ -139,6 +144,8 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+
+                // Tab content
                 const Expanded(
                   child: TabBarView(
                     children: [
@@ -148,7 +155,7 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
                       ClientTab(),
                       LagTab(),
                       FontChangerTab(),
-                    ]
+                    ],
                   ),
                 ),
               ],
@@ -158,3 +165,4 @@ class _OverlayFloatingWidgetState extends State<OverlayFloatingWidget> {
       ),
     );
   }
+}
