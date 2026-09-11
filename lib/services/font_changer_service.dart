@@ -162,32 +162,32 @@ class FontChangerService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_fontKey);
   }
+static Future<FontLoader> loadFontForPreview(FontPreset font) async {
+  final loader = FontLoader(font.id);
 
-  /// Loads a font and returns a FontLoader for the preview screen.
-  static Future<FontLoader> loadFontForPreview(FontPreset font) async {
-    final loader = FontLoader(font.id);
+  if (font.assetPath != null) {
+    final byteData = await rootBundle.load(font.assetPath!);
+    loader.addFont(Future.value(byteData));
+  } else if (font.filePath != null) {
+    final file = File(font.filePath!);
 
-    if (font.assetPath != null) {
-      final byteData = await rootBundle.load(font.assetPath!);
-      loader.addFont(Future.value(byteData));
-    } else if (font.filePath != null) {
-      final file = File(font.filePath!);
-
-      if (!await file.exists()) {
-        throw Exception('Font file not found.');
-      }
-
-      final bytes = await file.readAsBytes();
-      final byteData = ByteData.sublistView(bytes);
-
-      loader.addFont(Future.value(byteData));
-    } else {
-      throw Exception('No font file specified.');
+    if (!await file.exists()) {
+      throw Exception('Font file not found.');
     }
 
-    return loader;
+    final bytes = await file.readAsBytes();
+    final byteData = ByteData.sublistView(bytes);
+
+    loader.addFont(Future.value(byteData));
+  } else {
+    throw Exception('No font file specified.');
   }
 
+  await loader.load();
+
+  return loader;
+}
+  
   static Future<List<FontPreset>> getCustomFonts() async {
     try {
       final directory = await _getCustomFontsDirectory();
